@@ -3,12 +3,11 @@
 @import AVFoundation;
 @import AVKit;
 
-#import "WPVideoPlayerView.h"
-
-@interface WPAssetViewController () <WPVideoPlayerViewDelegate>
+@interface WPAssetViewController ()
 
 @property (nonatomic, strong) UIImageView *imageView;
-@property (nonatomic, strong) WPVideoPlayerView *videoView;
+@property (nonatomic, strong) UIView *videoView;
+@property (nonatomic, strong) AVPlayerViewController *playerViewController;
 
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
 
@@ -16,6 +15,14 @@
 
 @implementation WPAssetViewController
 
+- (instancetype)initWithAsset:(id<WPMediaAsset>)asset
+{
+    if (self = [super initWithNibName:nil bundle:nil]) {
+        _asset = asset;
+    }
+
+    return self;
+}
 
 - (void)viewDidLoad
 {
@@ -30,13 +37,14 @@
     [self.imageView.topAnchor constraintEqualToAnchor:self.topLayoutGuide.topAnchor].active = YES;
     [self.imageView.heightAnchor constraintEqualToAnchor:self.view.heightAnchor].active = YES;
 
-    [self.view addSubview:self.videoView];
+    [self addChildViewController:self.playerViewController];
     self.videoView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.videoView];
+    [self.playerViewController didMoveToParentViewController:self];
     [self.videoView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
     [self.videoView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor].active = YES;
-    [self.videoView.topAnchor constraintEqualToAnchor:self.topLayoutGuide.topAnchor].active = YES;
-    [self.videoView.heightAnchor constraintEqualToAnchor:self.view.heightAnchor].active = YES;
-    self.videoView.delegate = self;
+    [self.videoView.topAnchor constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor].active = YES;
+    [self.videoView.bottomAnchor constraintEqualToAnchor:self.bottomLayoutGuide.topAnchor].active = YES;
 
     [self.view addSubview:self.activityIndicatorView];
     self.activityIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -53,6 +61,11 @@
     [self showAsset];
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+}
+
 - (UIImageView *)imageView
 {
     if (_imageView) {
@@ -66,16 +79,15 @@
     return _imageView;
 }
 
-- (WPVideoPlayerView *)videoView
+- (AVPlayerViewController *)playerViewController
 {
-    if (_videoView) {
-        return _videoView;
+    if (!_playerViewController) {
+        _playerViewController = [AVPlayerViewController new];
+        _videoView = _playerViewController.view;
     }
-    _videoView = [[WPVideoPlayerView alloc] init];
-    [_videoView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapOnAsset:)]];
-    return _videoView;
-}
 
+    return _playerViewController;
+}
 
 - (UIActivityIndicatorView *)activityIndicatorView
 {
@@ -92,9 +104,10 @@
 {
     self.imageView.hidden = YES;
     self.videoView.hidden = YES;
+
     if (self.asset == nil) {
         self.imageView.image = nil;
-        self.videoView.videoURL = nil;
+        [self.playerViewController.player replaceCurrentItemWithPlayerItem:nil];
         return;
     }
     switch ([self.asset assetType]) {
@@ -133,7 +146,7 @@
 
 - (void)showVideoAsset
 {
-    self.videoView.hidden = NO;
+    self.playerViewController.view.hidden = NO;
     [self.activityIndicatorView startAnimating];
     __weak __typeof__(self) weakSelf = self;
     [self.asset videoAssetWithCompletionHandler:^(AVAsset *asset, NSError *error) {
@@ -141,14 +154,26 @@
         if (!strongSelf) {
             return;
         }
-        dispatch_async(dispatch_get_main_queue(), ^{            
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [strongSelf.activityIndicatorView stopAnimating];
+
             if (error) {
                 [strongSelf showError:error];
                 return;
             }
-            strongSelf.videoView.asset = asset;
+            [strongSelf setPlayerAsset:asset];
         });
     }];
+}
+
+- (void)setPlayerAsset:(AVAsset *)asset {
+    AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithAsset: asset];
+    AVPlayer *player = [AVPlayer playerWithPlayerItem:playerItem];
+    self.playerViewController.player = player;
+    self.playerViewController.updatesNowPlayingInfoCenter = NO;
+    self.playerViewController.showsPlaybackControls = self.showsPlaybackControls;
+
+    [self.playerViewController.player play];
 }
 
 - (void)showError:(NSError *)error {
@@ -173,6 +198,15 @@
     }
 }
 
+- (void)setShowsPlaybackControls:(BOOL)showsPlaybackControls
+{
+    if (_showsPlaybackControls != showsPlaybackControls) {
+        _showsPlaybackControls = showsPlaybackControls;
+
+        self.playerViewController.showsPlaybackControls = showsPlaybackControls;
+    }
+}
+
 - (CGSize)preferredContentSize
 {
     CGSize size = self.view.bounds.size;
@@ -183,28 +217,6 @@
     CGFloat scaleFactor = pixelSize.height / pixelSize.width;
 
     return CGSizeMake(size.width, size.width * scaleFactor);
-}
-
-#pragma mark - WPVideoPlayerViewDelegate
-
-- (void)videoPlayerViewStarted:(WPVideoPlayerView *)playerView {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.activityIndicatorView stopAnimating];
-    });
-}
-
-- (void)videoPlayerViewFinish:(WPVideoPlayerView *)playerView {
-
-}
-
-- (void)videoPlayerView:(WPVideoPlayerView *)playerView didFailWithError:(NSError *)error {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.activityIndicatorView stopAnimating];
-        if (error) {
-            [self showError:error];
-            return;
-        }
-    });
 }
 
 @end

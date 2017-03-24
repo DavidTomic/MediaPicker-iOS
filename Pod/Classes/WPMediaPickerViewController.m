@@ -739,6 +739,10 @@ referenceSizeForFooterInSection:(NSInteger)section
         UIViewController *viewController = [self previewControllerForTouchLocation:location];
 
         if (viewController) {
+            if ([viewController isKindOfClass:[WPAssetViewController class]]) {
+                ((WPAssetViewController *)viewController).showsPlaybackControls = YES;
+            }
+
             [self.navigationController pushViewController:viewController animated:YES];
         }
     }
@@ -795,6 +799,10 @@ referenceSizeForFooterInSection:(NSInteger)section
 
 - (void)previewingContext:(id <UIViewControllerPreviewing>)previewingContext commitViewController:(UIViewController *)viewControllerToCommit
 {
+    if ([viewControllerToCommit isKindOfClass:[WPAssetViewController class]]) {
+        ((WPAssetViewController *)viewControllerToCommit).showsPlaybackControls = YES;
+    }
+
     [self.navigationController pushViewController:viewControllerToCommit animated:YES];
 }
 

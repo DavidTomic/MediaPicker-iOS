@@ -1,7 +1,8 @@
 @import UIKit;
 #import "WPMediaCollectionDataSource.h"
-
+@protocol WPAssetViewControllerDelegate;
 @class WPMediaPickerViewController;
+
 /**
  *  The `WPMediaPickerViewControllerDelegate` protocol defines methods that allow you to to interact with the assets picker interface
  *  and manage the selection and highlighting of assets in the picker.
@@ -122,7 +123,7 @@
 @end
 
 
-@interface WPMediaPickerViewController : UICollectionViewController
+@interface WPMediaPickerViewController : UICollectionViewController <WPAssetViewControllerDelegate>
 
 @property (nonatomic, readonly, nonnull) NSMutableArray *selectedAssets;
 /**
