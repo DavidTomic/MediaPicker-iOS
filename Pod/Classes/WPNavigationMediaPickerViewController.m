@@ -120,9 +120,18 @@ static NSString *const ArrowDown = @"\u25be";
     } else {
         self.titleButton.hidden = NO;
     }
-    NSString *title = [NSString stringWithFormat:@"%@ %@", [mediaGroup name], ArrowDown];
+
+    NSString *groupName = [mediaGroup name] ?: @"Select source";
+    NSString *title = [NSString stringWithFormat:@"%@ %@", groupName, ArrowDown];
+
     [self.titleButton setTitle:title forState:UIControlStateNormal];
     [self.titleButton sizeToFit];
+}
+
+- (void)setGroup:(nonnull id<WPMediaGroup>)group
+{
+    [self.mediaPicker setGroup:group];
+    [self refreshTitle];
 }
 
 - (void)changeGroup:(UIButton *)sender

@@ -40,6 +40,10 @@
  */
 @property (nonatomic, assign) WPMediaType filter;
 
+/**
+ Allows to set a group as the current display group on the data source.
+ */
+- (void)setGroup:(nonnull id<WPMediaGroup>)group;
 
 /**
  Pushes a given ViewController into the internal UINavigationController. Useful for post-processing steps.
