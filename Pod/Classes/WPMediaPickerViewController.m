@@ -320,8 +320,10 @@ static CGSize CameraPreviewSize =  {88.0, 88.0};
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:cancelText
                                                        style:UIAlertActionStyleCancel
                                                      handler:^(UIAlertAction *action) {
-        if ([self.mediaPickerDelegate respondsToSelector:@selector(mediaPickerControllerDidCancel:)]) {
-            [self.mediaPickerDelegate mediaPickerControllerDidCancel:self];
+        if ([self.mediaPickerDelegate respondsToSelector:@selector(mediaPickerController:didFailLoadingDataSource:withError:)]) {
+            [self.mediaPickerDelegate mediaPickerController:self
+                                   didFailLoadingDataSource:self.dataSource
+                                                  withError:error];
         }
     }];
     [alertController addAction:okAction];

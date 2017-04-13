@@ -40,6 +40,16 @@
 - (void)mediaPickerControllerDidCancel:(nonnull WPMediaPickerViewController *)picker;
 
 /**
+ *  Tells the delegate that the data source failed to load.
+ *
+ *  @param picker The controller object managing the assets picker interface.
+ *  @param dataSource The data source that failed to load.
+ *  @param error The error that occurred, if any.
+ *
+ */
+- (void)mediaPickerController:(nonnull WPMediaPickerViewController *)picker didFailLoadingDataSource:(nullable id<WPMediaCollectionDataSource>)dataSource withError:(nullable NSError *)error;
+
+/**
  *  @name Enabling Assets
  */
 
