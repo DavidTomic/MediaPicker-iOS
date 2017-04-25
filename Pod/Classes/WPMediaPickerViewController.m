@@ -591,7 +591,7 @@ referenceSizeForFooterInSection:(NSInteger)section
     imagePickerController.mediaTypes = [mediaTypes allObjects];
     imagePickerController.delegate = self;
     imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
-    imagePickerController.videoQuality = UIImagePickerControllerQualityTypeHigh;
+    imagePickerController.videoQuality = UIImagePickerControllerQualityTypeMedium;
     imagePickerController.videoMaximumDuration = 100;
     imagePickerController.cameraDevice = [self cameraDevice];
     imagePickerController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
